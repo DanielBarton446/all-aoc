@@ -49,6 +49,24 @@ fn solve_part1(input: Vec<String>) -> usize {
         .count()
 }
 
+fn solve_part2(input: Vec<String>) -> usize {
+    input
+        .into_iter()
+        .map(|report_string| {
+            let report = parse_report(&report_string);
+            is_safe(report.clone())
+                || (0..report.len())
+                    .map(|i| {
+                        let mut report = report.clone();
+                        report.remove(i);
+                        is_safe(report)
+                    })
+                    .any(|is_safe| is_safe)
+        })
+        .filter(|&is_safe| is_safe)
+        .count()
+}
+
 fn main() -> Result<(), std::io::Error> {
     let file = File::open("input/input.txt")?;
     let input: Vec<String> = BufReader::new(file)
@@ -56,8 +74,8 @@ fn main() -> Result<(), std::io::Error> {
         .map(|l| l.expect("failed to read line!"))
         .collect();
 
-    println!("p1 => {}", solve_part1(input));
-    // println!("p1 => {}", solve_part2());
+    println!("p1 => {}", solve_part1(input.clone()));
+    println!("p1 => {}", solve_part2(input));
     Ok(())
 }
 
@@ -80,5 +98,34 @@ mod day01_tests {
             .collect();
         let results: Vec<bool> = reports.into_iter().map(|record| is_safe(record)).collect();
         assert_eq!(results, [true, false, false, false, false, true])
+    }
+
+    #[test]
+    fn p2_sample() {
+        let sample_input = r#"7 6 4 2 1
+1 2 7 8 9
+9 7 6 2 1
+1 3 2 4 5
+8 6 4 4 1
+1 3 6 7 9"#;
+        let reports: Vec<Vec<i32>> = sample_input
+            .split('\n')
+            .map(|record| parse_report(record))
+            .collect();
+        let results: Vec<bool> = reports
+            .into_iter()
+            .map(|record| {
+                is_safe(record.clone())
+                    || (0..record.len())
+                        .map(|i| {
+                            let mut record = record.clone();
+                            record.remove(i);
+                            is_safe(record)
+                        })
+                        .any(|is_safe| is_safe)
+            })
+            .collect();
+
+        assert_eq!(results, [true, false, false, true, true, true])
     }
 }
